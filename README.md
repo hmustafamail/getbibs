@@ -10,3 +10,5 @@ Ever want to automatically query Google Scholar to get all your citations? Well,
 1. Python 3
 
 That's all! Yay!
+
+Copyright for all code in this repository: CC BY-NC 4.0 (https://creativecommons.org/licenses/by-nc/4.0/)
