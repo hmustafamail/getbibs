@@ -1,14 +1,25 @@
 # getbibs
-Ever want to automatically query Google Scholar to get all your citations? Well, Google makes that really hard to do. CrossRef is much nicer to you; they have an API. This script walks through a folder recursively, and queries Crossref's API to get you Bibtex (Latex-compatible) citations for each of your PDFs. 
+This repository has two scripts:
 
-## Usage
+*rename_and_get_bibs.py* renames all the PDFs of academic articles in a folder with the format 'year, author, title.pdf', and also gets you Bibtex (Latex-compatible) citations for each of your PDFs.
+
+*getbibs.py* walks through a folder recursively, and gets you Bibtex (Latex-compatible) citations for each of your PDFs.
+
+## Usage for rename_and_get_bibs.py
+1. Put a bunch of academic PDFs in a folder
+2. Open a Terminal in that folder
+3. Run `python3 rename_and_get_bibs.py`
+
+## Usage for getbibs.py
 1. Rename all the PDFs to be of the following form: year, first author last name, partial title.pdf (e.g., 2012, boyd, critical questions for big data.pdf)
 2. Open a Terminal in the current directory
-3. getbibs.py > bibs.txt
+3. Run `getbibs.py > bibs.txt`
 
 ## Dependencies
 1. Python 3
+2. PyPDF2
 
-That's all! Yay!
+## Technical details
+These scripts use the CrossRef API. CrossRef is much more friendly to developers than Google Scholar, which does not support automated querying.
 
 Copyright for all code in this repository: CC BY-NC 4.0 (https://creativecommons.org/licenses/by-nc/4.0/)
