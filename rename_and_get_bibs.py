@@ -9,6 +9,7 @@ import re
 import os
 import urllib.request
 import json
+import ssl
 
 
 def getWebpage(url):
@@ -20,8 +21,12 @@ def getWebpage(url):
         }
     )
 
+    # create a security hole
+    context = ssl._create_unverified_context()
+
     # Get the results
-    wp = urllib.request.urlopen(req)
+    #wp = urllib.request.urlopen(req)
+    wp = urllib.request.urlopen(req, context=context)
     data = wp.read()
 
     # Try unwrapping it as JSON, and if you can't, then whatever.
@@ -34,6 +39,7 @@ def getWebpage(url):
 
 
 def searchFileForDOI(filename):
+
     pdfFileObject = open(filename, 'rb')
     pdfReader = PyPDF2.PdfFileReader(pdfFileObject)
     count = pdfReader.numPages
@@ -71,6 +77,34 @@ def appendCitationToBib(citation):
     f.close()
 
 
+def sanitizeFilename(filename):
+    filename = filename.replace('?', '')
+    filename = filename.replace('/', '')
+    filename = filename.replace('\\', '')
+    filename = filename.replace('|', '')
+    filename = filename.replace(':', '')
+    filename = filename.replace(';', '')
+    filename = filename.replace('\n', '')
+    filename = filename.replace('%', '')
+    filename = filename.replace('%', '')
+    filename = filename.replace('$', '')
+    filename = filename.replace('#', '')
+    filename = filename.replace('@', '')
+    filename = filename.replace('!', '')
+    filename = filename.replace('^', '')
+    filename = filename.replace('&', '')
+    filename = filename.replace('*', '')
+    filename = filename.replace('(', '')
+    filename = filename.replace(')', '')
+    filename = filename.replace('[', '')
+    filename = filename.replace(']', '')
+    filename = filename.replace('<', '')
+    filename = filename.replace('>', '')
+    filename = filename.replace('{', '')
+    filename = filename.replace('}', '')
+    return filename
+
+
 def renameFile(file, citation):
     # renames file with format 'year, author, title.pdf'
 
@@ -101,37 +135,48 @@ def renameFile(file, citation):
     # create new filename
     new_filename = year + ', ' + author + ', ' + title + '.pdf'
 
+    # remove most special characters
+    new_filename = sanitizeFilename(new_filename)
+
     # rename file
     os.rename(file, new_filename)
 
 
-files = [f for f in os.listdir('.') if os.path.isfile(os.path.join('.', f))]
+if __name__ == "__main__":
 
-for i in range(len(files)):
-    
-    # f is for current file
-    f = files[i]
+    files = [f for f in os.listdir('.') if os.path.isfile(os.path.join('.', f))]
 
-    print(str(i) + ": " + f)
+    for i in range(len(files)):
+        
+        # f is for current file
+        f = files[i]
 
-    # if it's a pdf, 
-    if len(f) > 4 and f[-4:] == ".pdf":
+        print(str(i) + ": " + f)
 
-        # see if there is a DOI in that PDF
-        doi = searchFileForDOI(f)
+        # if it's a pdf, 
+        if len(f) > 4 and f[-4:] == ".pdf":
 
-        # if so, 
-        if doi:
+            # see if there is a DOI in that PDF
+            doi = searchFileForDOI(f)
+
+            # if so, 
+            if doi:
+                
+                try:
+                    # get the citation for that doi
+                    citation = getCitationFromDOI(doi)
+                except urllib.error.HTTPError:
+                    print('unable to find citation for doi: ' + doi)
+                    continue
+                except urllib.error.URLError:
+                    print('URL error, probably unable to verify certificate for: ' + f)
+                    continue
+
+                # append the citation to bibs.bib
+                appendCitationToBib(citation)
+
+                # rename it to year, author, title.pdf
+                renameFile(f, citation)
+
             
-            try:
-                # get the citation for that doi
-                citation = getCitationFromDOI(doi)
-            except urllib.error.HTTPError:
-                print('unable to find citation for doi: ' + doi)
-                continue
-
-            # append the citation to bibs.bib
-            appendCitationToBib(citation)
-
-            # rename it to year, author, title.pdf
-            renameFile(f, citation)
+            
